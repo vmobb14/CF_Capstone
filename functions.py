@@ -6,9 +6,9 @@ cursor = connection.cursor()
 
 # ------
 
-with open('Competencies.sql') as outfile:
-    queries = outfile.read()
-cursor.executescript(queries)
+# with open('Assessment_Results.sql') as outfile:
+#     queries = outfile.read()
+# cursor.executescript(queries)
 
 # ------
 
