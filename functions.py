@@ -74,7 +74,6 @@ SELECT *
 FROM Users
 WHERE user_id = ? AND active = 1;\
 '''
-
     while True:
         data = cursor.execute(check, [id_input]).fetchone()
         if data == None:
@@ -138,6 +137,26 @@ Enter to try again.
 
 # ------
 
+class User():
+    def __init__(self, user_data):
+        self.id = user_data[0]
+        self.last = user_data[1]
+        self.first = user_data[2]
+        self.manager = False
+        self.phone = user_data[3]
+        self.email = user_data[4]
+
+class Manager():
+    def __init__(self, user_data):
+        self.id = user_data[0]
+        self.last = user_data[1]
+        self.first = user_data[2]
+        self.manager = True
+        self.phone = user_data[3]
+        self.email = user_data[4]
+
+# ------
+
 def create_user_instance(manager_check, user_data):
     if manager_check:
         user1 = Manager(user_data)
@@ -145,37 +164,6 @@ def create_user_instance(manager_check, user_data):
     else:
         user1 = User(user_data)
         return user1
-
-# ------
-
-def update_user_db(user_data, update_input, update_index):
-    query = '''\
-UPDATE Users
-SET last_name = ?, first_name = ?, phone = ?, email = ?
-WHERE user_id = ?;\
-'''
-    user_data.insert((update_index), update_input)
-    user_data.pop(update_index+1)
-    update_data = copy.deepcopy(user_data)
-    update_data.append(user_data[0])
-    update_data.pop(0)
-    cursor.execute(query, update_data)
-    connection.commit()
-    return user_data
-
-# ------
-
-def update_user_pw(user_data, update_input):
-    query = '''\
-UPDATE Users
-SET password = ?
-WHERE user_id = ?;\
-'''
-    update_data = []
-    update_data.append(update_input)
-    update_data.append(user_data[0])
-    cursor.execute(query, update_data)
-    connection.commit()
 
 # ------
 
@@ -217,7 +205,6 @@ def create_password():
             break
         else:
             continue
-
     # Convert password to array of bytes
     bytes = password1.encode('utf-8')
     # Generating salt
@@ -229,24 +216,45 @@ def create_password():
 
 # ------
 
-class User():
-    def __init__(self, user_data):
-        self.id = user_data[0]
-        self.last = user_data[1]
-        self.first = user_data[2]
-        self.manager = False
-        self.phone = user_data[3]
-        self.email = user_data[4]
+def update_user_db(user_data, update_input, update_index):
+    query = '''\
+UPDATE Users
+SET last_name = ?, first_name = ?, phone = ?, email = ?
+WHERE user_id = ?;\
+'''
+    user_data.insert((update_index), update_input)
+    user_data.pop(update_index+1)
+    update_data = copy.deepcopy(user_data)
+    update_data.append(user_data[0])
+    update_data.pop(0)
+    cursor.execute(query, update_data)
+    connection.commit()
+    return user_data
 
-class Manager():
-    def __init__(self, user_data):
-        self.id = user_data[0]
-        self.last = user_data[1]
-        self.first = user_data[2]
-        self.manager = True
-        self.phone = user_data[3]
-        self.email = user_data[4]
+# ------
 
+def update_user_pw(user_data, update_input):
+    query = '''\
+UPDATE Users
+SET password = ?
+WHERE user_id = ?;\
+'''
+    update_data = []
+    update_data.append(update_input)
+    update_data.append(user_data[0])
+    cursor.execute(query, update_data)
+    connection.commit()
+
+# ------
+
+def avg(num_list):
+    if len(num_list) == 1:
+        return num_list[0]
+    else:
+        num_list.pop(0)
+        return sum(num_list) / len(num_list)
+
+# ------
 # ------
 
 def user_menu_view(user1):
@@ -274,7 +282,7 @@ def user_menu_update(user1, user_data):
     [3] phone: {user1.phone}
     [4] email: {user1.email}
     [5] password
-    [6] Return
+    [6] Return (Updates profile)
     ''')
         menu_input = input('>>')
         if menu_input.isnumeric():
@@ -340,12 +348,21 @@ ORDER BY a.competency_id ASC, r.assessment_id ASC, r.date_taken DESC;\
     competencies_tuple = cursor.execute(competencies_query).fetchall()
     scores_tuple = cursor.execute(scores_query, [user1.id]).fetchall()
     summary_dict = {}
+    result_dict = {}
     for row in competencies_tuple:
         summary_dict[row[0]] = [0]
+
     for row in scores_tuple:
         summary_dict[row[0]].append(row[1])
-    print(summary_dict)
-    input()
+
+    for index, key in enumerate(summary_dict):
+        summary_dict[key] = avg(summary_dict[key])
+        result_dict[f'{competencies_tuple[index]}'] = summary_dict[key]
+
+    print(f'User Competency Summary for: {user1.last}, {user1.first} -- {user1.email}')
+    for key in result_dict:
+        print(f'{key}: {result_dict[key]}')
+    input('\nEnter to continue.\n')
 
 # ------
 
@@ -353,10 +370,10 @@ def user_menu(user1, user_data):
     main_menu = [1, 2, 3]
     while True:
         os.system('clear')
-        print('''\
-    **** Competency Tracking System ****  (User)
+        print(f'''\
+    **** Competency Tracking System **** U
 
-Please make a selection:
+Welcome, {user1.first}. Please make a selection:
 [1] View User Info
 [2] Update User Info
 [3] View User Competency Summary
