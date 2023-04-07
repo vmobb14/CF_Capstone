@@ -1,11 +1,4 @@
-import os
-import bcrypt
-from getpass import getpass
-from datetime import date
 from functions import *
-import sqlite3
-connection = sqlite3.connect('database.db')
-cursor = connection.cursor()
 
 # '$2b$12$5AY3Un1tAdlbax8SkkKOGeaBG/38apqs2A5xYqfN75zD08ABJs/AS'
 # query = '''\
@@ -16,13 +9,16 @@ cursor = connection.cursor()
 # cursor.execute(query)
 # connection.commit()
 
-while True:
-    user_data = login()
+def app_exe():
     while True:
-        user1 = create_user_instance(user_data)
-        if user1.manager:
-            input('Success.')
-            break
-        else:
-            user_menu(user1, user_data)
-            break
+        login_tuple = login()
+        manager_check = login_tuple[0]
+        user_data = copy.deepcopy(login_tuple[1])
+        while True:
+            user1 = create_user_instance(manager_check, user_data)
+            if user1.manager:
+                input('Success.')
+                break
+            else:
+                user_menu(user1, user_data)
+                break

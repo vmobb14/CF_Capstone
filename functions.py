@@ -1,8 +1,8 @@
 import os
 import copy
 import bcrypt
-from getpass import getpass
 from datetime import date
+from getpass import getpass
 import sqlite3
 connection = sqlite3.connect('database.db')
 cursor = connection.cursor()
@@ -14,11 +14,43 @@ cursor = connection.cursor()
 #     queries = outfile.read()
 # cursor.executescript(queries)
 
+# query = '''\
+# DELETE FROM Assessment_Results;\
+# '''
+# cursor.execute(query)
+# connection.commit()
+
+# ------
+
+def get_today():
+    return date.today()
+
 # ------
 
 def get_date():
-    today_date = str(date.today())
-    return today_date
+    os.system('clear')
+    current_date = []
+    raw_date = str(get_today())
+    raw_date = raw_date.split('-')
+    for field in raw_date:
+        current_date.append(int(field))
+
+    while True:
+        day_input = int(input('Enter day assessment was taken (DD): '))
+        month_input = int(input('Enter month assessment was taken (MM): '))
+        year_input = int(input('Enter year assessment was taken (YYYY): '))
+
+        if year_input > current_date[0] or year_input < 1973:
+            input('Invalid year input. Enter to re-input date.\n')
+        if year_input == current_date[0]:
+            if month_input <= current_date[1]:
+                if day_input > current_date[2]:
+                    input('Invalid day input. Enter to re-input date.\n')
+                    continue
+            else:
+                input('Invalid month input. Enter to re-input date.\n')
+                continue
+        return date(year_input, month_input, day_input)
 
 # ------
 
@@ -64,15 +96,14 @@ WHERE email = ? AND active = 1;\
         print('''\
 **** Competency Tracking System Login ****
 ''')
-
         email_input = input('Email: ')
-        user_info = cursor.execute(query, [email_input]).fetchone()
-        if user_info == None:
-            input('\nEmail not found. Enter to continue.')
+        user_tuple = cursor.execute(query, [email_input]).fetchone()
+        if user_tuple == None:
+            input('\nEmail not found. Enter to continue.\n')
             continue
 
         else:
-            user_password = user_info[6].encode('utf-8')
+            user_password = user_tuple[6].encode('utf-8')
             password_input = getpass('Password: ')
             # Encoding password
             input_bytes = password_input.encode('utf-8')
@@ -81,16 +112,19 @@ WHERE email = ? AND active = 1;\
 
             if result:
                 os.system('clear')
+                manager_check = False
                 user_data = []
-                user_info = user_info[:6:]
-                for field in user_info:
+                for field in user_tuple[:6:]:
                     user_data.append(field)
+                if user_tuple[3] == 1:
+                    manager_check = True
+                user_data.pop(3)
                 input('''\
 **** ACCESS GRANTED ****
 
-Enter to continue.\
+Enter to continue.
 ''')
-                return user_data
+                return (manager_check, user_data)
 
             else:
                 os.system('clear')
@@ -104,14 +138,12 @@ Enter to try again.
 
 # ------
 
-def create_user_instance(user_data):
-    if user_data[3] == 0:
-        user1 = User(user_data)
-        user_data.pop(3)
-        return user1
-    elif user_data[3] == 1:
+def create_user_instance(manager_check, user_data):
+    if manager_check:
         user1 = Manager(user_data)
-        user_data.pop(3)
+        return user1
+    else:
+        user1 = User(user_data)
         return user1
 
 # ------
@@ -163,24 +195,24 @@ WHERE email = ? AND active = 1;\
                 if check_data == None:
                     return email_input
                 else:
-                    input('\nEmail exists in database. Please check database.')
+                    input('\nEmail exists in database. Enter to continue.\n')
             else:
-                input('\nInvalid email input. Enter to try again.')
+                input('\nInvalid email input. Enter to try again.\n')
         else:
-            input('\nInvalid email input. Enter to try again.')
+            input('\nInvalid email input. Enter to try again.\n')
 
 # ------
 
 def create_password():
     os.system('clear')
     while True:
-        password1 = getpass('Input desired password at least eight characters in length: ')
+        password1 = getpass('Input desired password at least eight characters in length (input will not display): ')
         if len(password1) >= 8:
             break
         else:
             continue
     while True:
-        password2 = getpass('Re-input desired password: ')
+        password2 = getpass('Re-input desired password (input will not display): ')
         if password2 == password1:
             break
         else:
@@ -203,8 +235,8 @@ class User():
         self.last = user_data[1]
         self.first = user_data[2]
         self.manager = False
-        self.phone = user_data[4]
-        self.email = user_data[5]
+        self.phone = user_data[3]
+        self.email = user_data[4]
 
 class Manager():
     def __init__(self, user_data):
@@ -212,8 +244,8 @@ class Manager():
         self.last = user_data[1]
         self.first = user_data[2]
         self.manager = True
-        self.phone = user_data[4]
-        self.email = user_data[5]
+        self.phone = user_data[3]
+        self.email = user_data[4]
 
 # ------
 
@@ -227,7 +259,7 @@ WHERE user_id = ?;\
     data = cursor.execute(query, [user1.id]).fetchone()
     for index, field in enumerate(columns):
         print(f'{field}: {data[index]}')
-    input('\nEnter to continue.')
+    input('\nEnter to continue.\n')
 
 # ------
 
@@ -252,30 +284,68 @@ def user_menu_update(user1, user_data):
                     update_input = input('Input legal surname name: ')
                     update_input = none_check(update_input)
                     user_data = update_user_db(user_data, update_input, menu_input)
+                    user1 = create_user_instance(user1.manager, user_data)
+                    input('Field has been updated. Enter to continue.\n')
 
                 elif menu_input == 2:
                     update_input = input('Input legal given name: ')
                     update_input = none_check(update_input)
                     user_data = update_user_db(user_data, update_input, menu_input)
+                    user1 = create_user_instance(user1.manager, user_data)
+                    input('Field has been updated. Enter to continue.\n')
 
                 elif menu_input == 3:
                     update_input = input('Input desired ten digit phone number: ')
                     user_data = update_user_db(user_data, update_input, menu_input)
+                    user1 = create_user_instance(user1.manager, user_data)
+                    input('Field has been updated. Enter to continue.\n')
 
                 elif menu_input == 4:
                     update_input = create_email()
                     user_data = update_user_db(user_data, update_input, menu_input)
+                    user1 = create_user_instance(user1.manager, user_data)
+                    input('Field has been updated. Enter to continue.\n')
 
                 elif menu_input == 5:
                     update_input = create_password()
                     update_user_pw(user_data, update_input)
+                    user1 = create_user_instance(user1.manager, user_data)
+                    input('Field has been updated. Enter to continue.\n')
 
             elif menu_input == 6:
-                break
+                return user1
             else:
-                input('\nInvalid input. Enter to continue.')
+                input('\nInvalid input. Enter to continue.\n')
         else:
-            input('\nInvalid input. Enter to continue.')
+            input('\nInvalid input. Enter to continue.\n')
+
+# ------
+
+def user_menu_summary(user1):
+    competencies_query = '''\
+SELECT competency_id, name
+FROM Competencies
+WHERE active = 1
+ORDER BY competency_id ASC;\
+'''
+    scores_query = '''\
+SELECT a.competency_id, r.score
+FROM Assessment_Results r
+JOIN Assessments a
+ON r.assessment_id = a.assessment_id
+WHERE r.user_id = ?
+GROUP BY r.assessment_id
+ORDER BY a.competency_id ASC, r.assessment_id ASC, r.date_taken DESC;\
+'''
+    competencies_tuple = cursor.execute(competencies_query).fetchall()
+    scores_tuple = cursor.execute(scores_query, [user1.id]).fetchall()
+    summary_dict = {}
+    for row in competencies_tuple:
+        summary_dict[row[0]] = [0]
+    for row in scores_tuple:
+        summary_dict[row[0]].append(row[1])
+    print(summary_dict)
+    input()
 
 # ------
 
@@ -298,18 +368,19 @@ Please make a selection:
             table_selection = int(table_selection)
             if table_selection == 1:
                 user_menu_view(user1)
+
             elif table_selection == 2:
-                user_menu_update(user1, user_data)
+                user1 = user_menu_update(user1, user_data)
+
             elif table_selection == 3:
-                input()
+                user_menu_summary(user1)
 
         elif table_selection.isnumeric() and int(table_selection) == 4:
             print('Goodbye!\n')
             break
 
         else:
-            print('Invalid input, please try again.')
-            input('Enter to continue.')
+            input('Invalid input. Enter to continue.\n')
 
 # ------
 
