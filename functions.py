@@ -84,6 +84,54 @@ WHERE user_id = ? AND active = 1;\
 
 # ------
 
+def good_id_competencies(id_input):
+    check = '''\
+SELECT *
+FROM Competencies
+WHERE competency_id = ? AND active = 1;\
+'''
+    while True:
+        data = cursor.execute(check, [id_input]).fetchone()
+        if data == None:
+            os.system('clear')
+            id_input = int(input('Invalid ID input. Please try again: '))
+        else:
+            return id_input
+
+# ------
+
+def good_id_assessments(id_input):
+    check = '''\
+SELECT *
+FROM Assessments
+WHERE assessment_id = ? AND active = 1;\
+'''
+    while True:
+        data = cursor.execute(check, [id_input]).fetchone()
+        if data == None:
+            os.system('clear')
+            id_input = int(input('Invalid ID input. Please try again: '))
+        else:
+            return id_input
+
+# ------
+
+def good_id_results(id_input):
+    check = '''\
+SELECT *
+FROM Assessment_Results
+WHERE result_id = ? AND active = 1;\
+'''
+    while True:
+        data = cursor.execute(check, [id_input]).fetchone()
+        if data == None:
+            os.system('clear')
+            id_input = int(input('Invalid ID input. Please try again: '))
+        else:
+            return id_input
+
+# ------
+
 def login():
     query = '''\
 SELECT *
@@ -276,13 +324,13 @@ def user_menu_update(user1, user_data):
     while True:
         os.system('clear')
         print(f'''\
-    Input item to update:
-    [1] last_name: {user1.last}
-    [2] first_name: {user1.first}
-    [3] phone: {user1.phone}
-    [4] email: {user1.email}
-    [5] password
-    [6] Return (Updates profile)
+Input item to update:
+[1] last_name: {user1.last}
+[2] first_name: {user1.first}
+[3] phone: {user1.phone}
+[4] email: {user1.email}
+[5] password
+[6] Return (Updates profile)
     ''')
         menu_input = input('>>')
         if menu_input.isnumeric():
@@ -349,6 +397,7 @@ ORDER BY a.competency_id ASC, r.assessment_id ASC, r.date_taken DESC;\
     scores_tuple = cursor.execute(scores_query, [user1.id]).fetchall()
     summary_dict = {}
     result_dict = {}
+
     for row in competencies_tuple:
         summary_dict[row[0]] = [0]
 
@@ -356,12 +405,11 @@ ORDER BY a.competency_id ASC, r.assessment_id ASC, r.date_taken DESC;\
         summary_dict[row[0]].append(row[1])
 
     for index, key in enumerate(summary_dict):
-        summary_dict[key] = avg(summary_dict[key])
-        result_dict[f'{competencies_tuple[index]}'] = summary_dict[key]
+        result_dict[competencies_tuple[index]] = avg(summary_dict[key])
 
     print(f'User Competency Summary for: {user1.last}, {user1.first} -- {user1.email}')
     for key in result_dict:
-        print(f'{key}: {result_dict[key]}')
+        print(f'{key[0]}, {key[1]}: {result_dict[key]}')
     input('\nEnter to continue.\n')
 
 # ------
@@ -371,7 +419,7 @@ def user_menu(user1, user_data):
     while True:
         os.system('clear')
         print(f'''\
-    **** Competency Tracking System **** U
+    **** Competency Tracking System ****  U
 
 Welcome, {user1.first}. Please make a selection:
 [1] View User Info
@@ -393,6 +441,258 @@ Welcome, {user1.first}. Please make a selection:
                 user_menu_summary(user1)
 
         elif table_selection.isnumeric() and int(table_selection) == 4:
+            break
+
+        else:
+            input('Invalid input. Enter to continue.\n')
+
+# ------
+# ------
+
+def manager_competency_levels():
+    competency_query = '''\
+SELECT name
+FROM Competencies
+WHERE competency_id = ?;\
+'''
+    data_query = '''\
+SELECT r.user_id, u.last_name, u.first_name, r.score
+FROM Assessment_Results r
+JOIN Users u
+ON r.user_id = u.user_id
+JOIN Assessments a
+ON r.assessment_id = a.assessment_id
+WHERE a.competency_id = ? AND u.active = 1
+ORDER BY u.last_name ASC;\
+'''
+    id_search = input('Input competency ID to retrieve assessments for: ')
+    good_id_competencies(id_search)
+
+    data_tuple = cursor.execute(data_query, [id_search]).fetchall()
+    competency_tuple = cursor.execute(competency_query, [id_search]).fetchone()
+    users_dict = {}
+    parsing_dict = {}
+    result_dict = {}
+
+    for row in data_tuple:
+        print(row)
+        if parsing_dict.get(row[0]):
+            parsing_dict[row[0]].append(row[3])
+        if not parsing_dict.get(row[0]):
+            parsing_dict[row[0]] = [0]
+            parsing_dict[row[0]].append(row[3])
+        if not users_dict.get(row[0]):
+            users_dict[row[0]] = (row[1], row[2])
+
+    for key in parsing_dict:
+        result_dict[users_dict[key]] = avg(parsing_dict[key])
+
+    os.system('clear')
+    print(f'Competency Levels Summary for: {competency_tuple[0]}')
+    for key in result_dict:
+        print(f'{key[0]}, {key[1]}: {result_dict[key]}')
+    input('\nEnter to continue.\n')
+
+# ------
+
+def manager_competency_summary():
+    user_query = '''\
+SELECT last_name, first_name, email
+FROM Users
+WHERE user_id = ?;\
+'''
+    competencies_query = '''\
+SELECT competency_id, name
+FROM Competencies
+WHERE active = 1
+ORDER BY competency_id ASC;\
+'''
+    scores_query = '''\
+SELECT a.competency_id, r.score
+FROM Assessment_Results r
+JOIN Assessments a
+ON r.assessment_id = a.assessment_id
+WHERE r.user_id = ?
+GROUP BY r.assessment_id
+ORDER BY a.competency_id ASC, r.assessment_id ASC, r.date_taken DESC;\
+'''
+    id_search = input('Input user ID to retrieve scores for: ')
+    good_id_users(id_search)
+
+    competencies_tuple = cursor.execute(competencies_query).fetchall()
+    scores_tuple = cursor.execute(scores_query, [id_search]).fetchall()
+    user_info_tuple = cursor.execute(user_query, [id_search]).fetchone()
+    parsing_dict = {}
+    result_dict = {}
+
+    for row in competencies_tuple:
+        parsing_dict[row[0]] = [0]
+
+    for row in scores_tuple:
+        parsing_dict[row[0]].append(row[1])
+
+    for index, key in enumerate(parsing_dict):
+        result_dict[competencies_tuple[index]] = avg(parsing_dict[key])
+
+    os.system('clear')
+    print(f'User Competency Summary for: {user_info_tuple[0]}, {user_info_tuple[1]} -- {user_info_tuple[2]}')
+    for key in result_dict:
+        print(f'{key[0]}, {key[1]}: {result_dict[key]}')
+    input('\nEnter to continue.\n')
+
+# ------
+
+def manager_assessment_summary():
+    user_query = '''\
+SELECT last_name, first_name, email
+FROM Users
+WHERE user_id = ?;\
+'''
+    assessments_query = '''\
+SELECT name
+FROM Assessments
+WHERE active = 1
+ORDER BY assessment_id ASC;\
+'''
+    attempts_query = '''\
+SELECT assessment_id
+FROM Assessment_Results
+WHERE user_id = ? AND active = 1
+ORDER BY assessment_id ASC, result_id DESC;\
+'''
+    id_search = input('Input user ID to retrieve assessments for: ')
+    good_id_users(id_search)
+
+    assessments_tuple = cursor.execute(assessments_query).fetchall()
+    attempts_tuple = cursor.execute(attempts_query, [id_search]).fetchall()
+    user_info_tuple = cursor.execute(user_query, [id_search]).fetchone()
+    assessments_list = [0]
+    parsing_dict = {}
+    result_dict = {}
+
+    for row in assessments_tuple:
+        assessments_list.append(row[0])
+
+    for row in attempts_tuple:
+        parsing_dict[row[0]] = 0
+
+    for row in attempts_tuple:
+        parsing_dict[row[0]] += 1
+
+    for key in parsing_dict:
+        result_dict[(key, assessments_list[key])] = parsing_dict[key]
+
+    os.system('clear')
+    print(f'User Assessment Summary for: {user_info_tuple[0]}, {user_info_tuple[1]} -- {user_info_tuple[2]}')
+    for key in result_dict:
+        print(f'{key[0]}, {key[1]}: {result_dict[key]}')
+    input('\nEnter to continue.\n')
+
+# ------
+
+def manager_reports_menu():
+    main_menu = [1, 2, 3]
+    while True:
+        os.system('clear')
+        print(f'''\
+    **** Reports System ****  M
+
+Please make a selection:
+[1] Competency Levels Summary
+[2] User Competency Summary
+[3] User Assessment Summary
+[4] Return
+''')
+        table_selection = input('>>')
+        os.system('clear')
+        if table_selection.isnumeric() and int(table_selection) in main_menu:
+            table_selection = int(table_selection)
+            if table_selection == 1:
+                manager_competency_levels()
+
+            elif table_selection == 2:
+                manager_competency_summary()
+
+            elif table_selection == 3:
+                manager_assessment_summary()
+
+        elif table_selection.isnumeric() and int(table_selection) == 4:
+            break
+
+        else:
+            input('Invalid input. Enter to continue.\n')
+
+# ------
+
+def user_menu_m(user1, user_data):
+    main_menu = [1, 2, 3]
+    while True:
+        os.system('clear')
+        print(f'''\
+    **** Competency Tracking System ****  M
+
+Welcome, {user1.first}. Please make a selection:
+[1] View User Info
+[2] Update User Info
+[3] View User Competency Summary
+[4] Return
+''')
+        table_selection = input('>>')
+        os.system('clear')
+        if table_selection.isnumeric() and int(table_selection) in main_menu:
+            table_selection = int(table_selection)
+            if table_selection == 1:
+                user_menu_view(user1)
+
+            elif table_selection == 2:
+                user1 = user_menu_update(user1, user_data)
+
+            elif table_selection == 3:
+                user_menu_summary(user1)
+
+        elif table_selection.isnumeric() and int(table_selection) == 4:
+            break
+
+        else:
+            input('Invalid input. Enter to continue.\n')
+
+# ------
+
+def manager_menu(user1):
+    main_menu = [1, 2, 3, 4, 5]
+    while True:
+        os.system('clear')
+        print(f'''\
+    **** Competency Tracking System ****  M
+
+Welcome, {user1.first}. Please make a selection:
+[1] Reports
+[2] View
+[3] Add
+[4] Update
+[5] Deactivate
+[6] Return
+''')
+        table_selection = input('>>')
+        os.system('clear')
+        if table_selection.isnumeric() and int(table_selection) in main_menu:
+            table_selection = int(table_selection)
+            if table_selection == 1:
+                manager_reports_menu()
+
+            elif table_selection == 2:
+                input()
+
+            elif table_selection == 3:
+                input()
+
+            elif table_selection == 4:
+                input()
+
+            elif table_selection == 5:
+                input()
+
+        elif table_selection.isnumeric() and int(table_selection) == 6:
             print('Goodbye!\n')
             break
 
@@ -401,3 +701,30 @@ Welcome, {user1.first}. Please make a selection:
 
 # ------
 
+def manager_menu_selection(user1, user_data):
+    main_menu = [1, 2]
+    while True:
+        os.system('clear')
+        print(f'''\
+    **** Manager Login System ****  M
+
+Please make a selection:
+[1] User Menus
+[2] Manager Menus
+[3] Logout
+''')
+        table_selection = input('>>')
+        os.system('clear')
+        if table_selection.isnumeric() and int(table_selection) in main_menu:
+            table_selection = int(table_selection)
+            if table_selection == 1:
+                user_menu_m(user1, user_data)
+
+            elif table_selection == 2:
+                manager_menu(user1)
+
+        elif table_selection.isnumeric() and int(table_selection) == 3:
+            break
+
+        else:
+            input('Invalid input. Enter to continue.\n')
