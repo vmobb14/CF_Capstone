@@ -413,7 +413,7 @@ ORDER BY a.competency_id ASC, r.assessment_id ASC, r.date_taken DESC;\
     input('\nEnter to continue.\n')
 
 # ------
-
+##
 def user_menu(user1, user_data):
     main_menu = [1, 2, 3]
     while True:
@@ -447,6 +447,40 @@ Welcome, {user1.first}. Please make a selection:
             input('Invalid input. Enter to continue.\n')
 
 # ------
+# ------
+##
+def user_menu_m(user1, user_data):
+    main_menu = [1, 2, 3]
+    while True:
+        os.system('clear')
+        print(f'''\
+    **** Competency Tracking System ****  M
+
+Welcome, {user1.first}. Please make a selection:
+[1] View User Info
+[2] Update User Info
+[3] View User Competency Summary
+[4] Return
+''')
+        table_selection = input('>>')
+        os.system('clear')
+        if table_selection.isnumeric() and int(table_selection) in main_menu:
+            table_selection = int(table_selection)
+            if table_selection == 1:
+                user_menu_view(user1)
+
+            elif table_selection == 2:
+                user1 = user_menu_update(user1, user_data)
+
+            elif table_selection == 3:
+                user_menu_summary(user1)
+
+        elif table_selection.isnumeric() and int(table_selection) == 4:
+            break
+
+        else:
+            input('Invalid input. Enter to continue.\n')
+
 # ------
 
 def manager_competency_levels():
@@ -589,7 +623,7 @@ ORDER BY assessment_id ASC, result_id DESC;\
     input('\nEnter to continue.\n')
 
 # ------
-
+##
 def manager_reports_menu():
     main_menu = [1, 2, 3]
     while True:
@@ -623,62 +657,29 @@ Please make a selection:
             input('Invalid input. Enter to continue.\n')
 
 # ------
-
-def user_menu_m(user1, user_data):
-    main_menu = [1, 2, 3]
+##
+def manager_viewing_menu():
+    main_menu = [1, 2, 3, 4, 5, 6]
     while True:
         os.system('clear')
         print(f'''\
-    **** Competency Tracking System ****  M
+    **** Viewing System ****  M
 
-Welcome, {user1.first}. Please make a selection:
-[1] View User Info
-[2] Update User Info
-[3] View User Competency Summary
-[4] Return
+Please make a selection:
+[1] Search active users by surname
+[2] Search active users by given name
+[3] View active users
+[4] View active competencies
+[5] View active assessments
+[6] View active assessment results
+[7] Return
 ''')
         table_selection = input('>>')
         os.system('clear')
         if table_selection.isnumeric() and int(table_selection) in main_menu:
             table_selection = int(table_selection)
             if table_selection == 1:
-                user_menu_view(user1)
-
-            elif table_selection == 2:
-                user1 = user_menu_update(user1, user_data)
-
-            elif table_selection == 3:
-                user_menu_summary(user1)
-
-        elif table_selection.isnumeric() and int(table_selection) == 4:
-            break
-
-        else:
-            input('Invalid input. Enter to continue.\n')
-
-# ------
-
-def manager_menu(user1):
-    main_menu = [1, 2, 3, 4, 5]
-    while True:
-        os.system('clear')
-        print(f'''\
-    **** Competency Tracking System ****  M
-
-Welcome, {user1.first}. Please make a selection:
-[1] Reports
-[2] View
-[3] Add
-[4] Update
-[5] Deactivate
-[6] Return
-''')
-        table_selection = input('>>')
-        os.system('clear')
-        if table_selection.isnumeric() and int(table_selection) in main_menu:
-            table_selection = int(table_selection)
-            if table_selection == 1:
-                manager_reports_menu()
+                input()
 
             elif table_selection == 2:
                 input()
@@ -692,15 +693,215 @@ Welcome, {user1.first}. Please make a selection:
             elif table_selection == 5:
                 input()
 
-        elif table_selection.isnumeric() and int(table_selection) == 6:
-            print('Goodbye!\n')
+            elif table_selection == 6:
+                input()
+
+        elif table_selection.isnumeric() and int(table_selection) == 7:
             break
 
         else:
             input('Invalid input. Enter to continue.\n')
 
 # ------
+##
+def manager_creation_menu():
+    main_menu = [1, 2, 3, 4]
+    while True:
+        os.system('clear')
+        print(f'''\
+    **** Creation System ****  M
 
+Please make a selection:
+[1] Create user record
+[2] Create competency record
+[3] Create assessment record
+[4] Create assessment result record
+[5] Return
+''')
+        table_selection = input('>>')
+        os.system('clear')
+        if table_selection.isnumeric() and int(table_selection) in main_menu:
+            table_selection = int(table_selection)
+            if table_selection == 1:
+                input()
+
+            elif table_selection == 2:
+                input()
+
+            elif table_selection == 3:
+                input()
+
+            elif table_selection == 4:
+                input()
+
+        elif table_selection.isnumeric() and int(table_selection) == 5:
+            break
+
+        else:
+            input('Invalid input. Enter to continue.\n')
+
+# ------
+##
+def manager_update_menu():
+    main_menu = [1, 2, 3, 4]
+    while True:
+        os.system('clear')
+        print(f'''\
+    **** Updates System ****  M
+
+Please make a selection:
+[1] Update user
+[2] Update competency
+[3] Update assessment
+[4] Update assessment result
+[5] Return
+''')
+        table_selection = input('>>')
+        os.system('clear')
+        if table_selection.isnumeric() and int(table_selection) in main_menu:
+            table_selection = int(table_selection)
+            if table_selection == 1:
+                input()
+
+            elif table_selection == 2:
+                input()
+
+            elif table_selection == 3:
+                input()
+
+            elif table_selection == 4:
+                input()
+
+        elif table_selection.isnumeric() and int(table_selection) == 5:
+            break
+
+        else:
+            input('Invalid input. Enter to continue.\n')
+
+# ------
+##
+def manager_deactivate_menu():
+    main_menu = [1, 2, 3, 4]
+    while True:
+        os.system('clear')
+        print(f'''\
+    **** Deactivate/Delete System ****  M
+
+Please make a selection:
+[1] Deactivate user
+[2] Deactivate competency
+[3] Deactivate assessment
+[4] Delete assessment result
+[5] Return
+''')
+        table_selection = input('>>')
+        os.system('clear')
+        if table_selection.isnumeric() and int(table_selection) in main_menu:
+            table_selection = int(table_selection)
+            if table_selection == 1:
+                input()
+
+            elif table_selection == 2:
+                input()
+
+            elif table_selection == 3:
+                input()
+
+            elif table_selection == 4:
+                input()
+
+        elif table_selection.isnumeric() and int(table_selection) == 5:
+            break
+
+        else:
+            input('Invalid input. Enter to continue.\n')
+
+# ------
+##
+def manager_export_menu():
+    main_menu = [1, 2, 3, 4]
+    while True:
+        os.system('clear')
+        print(f'''\
+    **** Import/Export System ****  M
+
+Please make a selection:
+[1] Import assessment results
+[2] Export users
+[3] Export competencies
+[4] Export assessments
+[5] Return
+''')
+        table_selection = input('>>')
+        os.system('clear')
+        if table_selection.isnumeric() and int(table_selection) in main_menu:
+            table_selection = int(table_selection)
+            if table_selection == 1:
+                input()
+
+            elif table_selection == 2:
+                input()
+
+            elif table_selection == 3:
+                input()
+
+            elif table_selection == 4:
+                input()
+
+        elif table_selection.isnumeric() and int(table_selection) == 5:
+            break
+
+        else:
+            input('Invalid input. Enter to continue.\n')
+
+# ------
+##
+def manager_menu(user1):
+    main_menu = [1, 2, 3, 4, 5, 6]
+    while True:
+        os.system('clear')
+        print(f'''\
+    **** Competency Tracking System ****  M
+
+Welcome, {user1.first}. Please make a selection:
+[1] Reports
+[2] View
+[3] Create
+[4] Update
+[5] Deactivate/Delete
+[6] Import/Export
+[7] Return
+''')
+        table_selection = input('>>')
+        os.system('clear')
+        if table_selection.isnumeric() and int(table_selection) in main_menu:
+            table_selection = int(table_selection)
+            if table_selection == 1:
+                manager_reports_menu()
+
+            elif table_selection == 2:
+                manager_viewing_menu()
+
+            elif table_selection == 3:
+                manager_creation_menu()
+
+            elif table_selection == 4:
+                manager_update_menu()
+
+            elif table_selection == 5:
+                manager_deactivate_menu()
+
+            elif table_selection == 6:
+                manager_export_menu()
+
+        elif table_selection.isnumeric() and int(table_selection) == 7:
+            break
+
+        else:
+            input('Invalid input. Enter to continue.\n')
+
+# ------
+##
 def manager_menu_selection(user1, user_data):
     main_menu = [1, 2]
     while True:
