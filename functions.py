@@ -671,7 +671,7 @@ Please make a selection:
 [3] View active users
 [4] View active competencies
 [5] View active assessments
-[6] View active assessment results
+[6] View all assessment results
 [7] Return
 ''')
         table_selection = input('>>')
@@ -785,7 +785,7 @@ def manager_deactivate_menu():
     while True:
         os.system('clear')
         print(f'''\
-    **** Deactivate/Delete System ****  M
+    **** Deactivation/Deletion System ****  M
 
 Please make a selection:
 [1] Deactivate user
