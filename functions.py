@@ -15,7 +15,8 @@ cursor = connection.cursor()
 # cursor.executescript(queries)
 
 # query = '''\
-# DELETE FROM Assessment_Results;\
+# DELETE FROM Users
+# WHERE first_name = 'Charlee';\
 # '''
 # cursor.execute(query)
 # connection.commit()
@@ -27,7 +28,34 @@ def get_today():
 
 # ------
 
-def get_date():
+def get_hire_date():
+    os.system('clear')
+    current_date = []
+    raw_date = str(get_today())
+    raw_date = raw_date.split('-')
+    for field in raw_date:
+        current_date.append(int(field))
+
+    while True:
+        day_input = int(input('Enter day employee was hired (DD): '))
+        month_input = int(input('Enter month employee was hired (MM): '))
+        year_input = int(input('Enter year employee was hired (YYYY): '))
+
+        if year_input > current_date[0] or year_input < 1972:
+            input('Invalid year input. Enter to re-input date.\n')
+        if year_input == current_date[0]:
+            if month_input <= current_date[1]:
+                if day_input > current_date[2]:
+                    input('Invalid day input. Enter to re-input date.\n')
+                    continue
+            else:
+                input('Invalid month input. Enter to re-input date.\n')
+                continue
+        return date(year_input, month_input, day_input)
+
+# ------
+
+def get_assessment_date():
     os.system('clear')
     current_date = []
     raw_date = str(get_today())
@@ -40,7 +68,7 @@ def get_date():
         month_input = int(input('Enter month assessment was taken (MM): '))
         year_input = int(input('Enter year assessment was taken (YYYY): '))
 
-        if year_input > current_date[0] or year_input < 1973:
+        if year_input > current_date[0] or year_input < 1972:
             input('Invalid year input. Enter to re-input date.\n')
         if year_input == current_date[0]:
             if month_input <= current_date[1]:
@@ -79,6 +107,22 @@ WHERE user_id = ? AND active = 1;\
         if data == None:
             os.system('clear')
             id_input = int(input('Invalid ID input. Please try again: '))
+        else:
+            return id_input
+
+# ------
+
+def good_id_managers(id_input):
+    check = '''\
+SELECT *
+FROM Users
+WHERE user_id = ? AND active = 1 AND manager = 1;\
+'''
+    while True:
+        data = cursor.execute(check, [id_input]).fetchone()
+        if data == None:
+            os.system('clear')
+            id_input = int(input('Invalid manager ID input. Please try again: '))
         else:
             return id_input
 
@@ -240,14 +284,15 @@ WHERE email = ? AND active = 1;\
 # ------
 
 def create_password():
-    os.system('clear')
     while True:
+        os.system('clear')
         password1 = getpass('Input desired password at least eight characters in length (input will not display): ')
         if len(password1) >= 8:
             break
         else:
             continue
     while True:
+        os.system('clear')
         password2 = getpass('Re-input desired password (input will not display): ')
         if password2 == password1:
             break
@@ -377,7 +422,7 @@ Input item to update:
 
 # ------
 
-def user_menu_summary(user1):
+def competency_summary(user1):
     competencies_query = '''\
 SELECT competency_id, name
 FROM Competencies
@@ -438,14 +483,14 @@ Welcome, {user1.first}. Please make a selection:
                 user1 = user_menu_update(user1, user_data)
 
             elif table_selection == 3:
-                user_menu_summary(user1)
+                competency_summary(user1)
 
         elif table_selection.isnumeric() and int(table_selection) == 4:
             break
 
         else:
             input('Invalid input. Enter to continue.\n')
-
+##
 # ------
 # ------
 ##
@@ -473,17 +518,17 @@ Welcome, {user1.first}. Please make a selection:
                 user1 = user_menu_update(user1, user_data)
 
             elif table_selection == 3:
-                user_menu_summary(user1)
+                competency_summary(user1)
 
         elif table_selection.isnumeric() and int(table_selection) == 4:
             break
 
         else:
             input('Invalid input. Enter to continue.\n')
-
+##
 # ------
 
-def manager_competency_levels():
+def competency_levels():
     competency_query = '''\
 SELECT name
 FROM Competencies
@@ -529,7 +574,7 @@ ORDER BY u.last_name ASC;\
 
 # ------
 
-def manager_competency_summary():
+def competency_summary_m():
     user_query = '''\
 SELECT last_name, first_name, email
 FROM Users
@@ -576,7 +621,7 @@ ORDER BY a.competency_id ASC, r.assessment_id ASC, r.date_taken DESC;\
 
 # ------
 
-def manager_assessment_summary():
+def assessment_summary():
     user_query = '''\
 SELECT last_name, first_name, email
 FROM Users
@@ -642,19 +687,120 @@ Please make a selection:
         if table_selection.isnumeric() and int(table_selection) in main_menu:
             table_selection = int(table_selection)
             if table_selection == 1:
-                manager_competency_levels()
+                competency_levels()
 
             elif table_selection == 2:
-                manager_competency_summary()
+                competency_summary_m()
 
             elif table_selection == 3:
-                manager_assessment_summary()
+                assessment_summary()
 
         elif table_selection.isnumeric() and int(table_selection) == 4:
             break
 
         else:
             input('Invalid input. Enter to continue.\n')
+##
+# ------
+
+def search_last():
+    query = '''\
+SELECT user_id, last_name, first_name, manager, phone, email, hire_date, date_entered
+FROM Users
+WHERE last_name LIKE ?
+ORDER BY user_id ASC;\
+'''
+    name_input = input('Input surname to search for: ')
+    name_input = f'%{name_input}%'
+    columns = ['id', 'last_name', 'first_name', 'm', 'phone', 'email', 'hire_date', 'date_entered']
+    data = cursor.execute(query, [name_input]).fetchall()
+    os.system('clear')
+    print(f'{columns[0]:<5}| {columns[1]:<22}| {columns[2]:<22}| {columns[3]:<3}| {columns[4]:<16}| {columns[5]:40}| {columns[6]:<12}| {columns[7]}')
+    for row in data:
+        print(f'{row[0]:<5}| {row[1]:<22}| {row[2]:<22}| {row[3]:<3}| {row[4]:<16}| {row[5]:40}| {row[6]:<12}| {row[7]}')
+    input('\nEnter to continue.\n')
+
+# ------
+
+def search_first():
+    query = '''\
+SELECT user_id, last_name, first_name, manager, phone, email, hire_date, date_entered
+FROM Users
+WHERE first_name LIKE ?
+ORDER BY user_id ASC;\
+'''
+    name_input = input('Input given name to search for: ')
+    name_input = f'%{name_input}%'
+    columns = ['id', 'last_name', 'first_name', 'm', 'phone', 'email', 'hire_date', 'date_entered']
+    data = cursor.execute(query, [name_input]).fetchall()
+    os.system('clear')
+    print(f'{columns[0]:<5}| {columns[1]:<22}| {columns[2]:<22}| {columns[3]:<3}| {columns[4]:<16}| {columns[5]:40}| {columns[6]:<12}| {columns[7]}')
+    for row in data:
+        print(f'{row[0]:<5}| {row[1]:<22}| {row[2]:<22}| {row[3]:<3}| {row[4]:<16}| {row[5]:40}| {row[6]:<12}| {row[7]}')
+    input('\nEnter to continue.\n')
+
+# ------
+
+def view_users():
+    query = '''\
+SELECT user_id, last_name, first_name, manager, phone, email, hire_date, date_entered
+FROM Users
+ORDER BY user_id ASC;\
+'''
+    columns = ['id', 'last_name', 'first_name', 'm', 'phone', 'email', 'hire_date', 'date_entered']
+    data = cursor.execute(query).fetchall()
+    print(f'{columns[0]:<5}| {columns[1]:<22}| {columns[2]:<22}| {columns[3]:<3}| {columns[4]:<16}| {columns[5]:40}| {columns[6]:<12}| {columns[7]}')
+    for row in data:
+        print(f'{row[0]:<5}| {row[1]:<22}| {row[2]:<22}| {row[3]:<3}| {row[4]:<16}| {row[5]:40}| {row[6]:<12}| {row[7]}')
+    input('\nEnter to continue.\n')
+
+# ------
+
+def view_competencies():
+    query = '''\
+SELECT competency_id, name, date_entered
+FROM Competencies
+ORDER BY competency_id ASC;\
+'''
+    columns = ['id', 'name', 'date_entered']
+    data = cursor.execute(query).fetchall()
+    print(f'{columns[0]:<4}| {columns[1]:<32}| {columns[2]}')
+    for row in data:
+        print(f'{row[0]:<4}| {row[1]:<32}| {row[2]}')
+    input('\nEnter to continue.\n')
+
+# ------
+
+def view_assessments():
+    query = '''\
+SELECT assessment_id, name, competency_id, date_entered
+FROM Assessments
+ORDER BY assessment_id ASC;\
+'''
+    columns = ['id', 'name', 'competency', 'date_entered']
+    data = cursor.execute(query).fetchall()
+    print(f'{columns[0]:<5}| {columns[1]:<32}| {columns[2]:<12}| {columns[3]}')
+    for row in data:
+        print(f'{row[0]:<5}| {row[1]:<32}| {row[2]:<12}| {row[3]}')
+    input('\nEnter to continue.\n')
+
+# ------
+
+def view_results():
+    query = '''\
+SELECT result_id, user_id, assessment_id, score, date_taken, manager_id, date_entered
+FROM Assessment_Results
+ORDER BY result_id ASC;\
+'''
+    columns = ['id', 'user', 'assessment', 'score', 'date_taken', 'manager', 'date_entered']
+    data = cursor.execute(query).fetchall()
+    print(f'{columns[0]:<6}| {columns[1]:<6}| {columns[2]:<12}| {columns[3]:<7}| {columns[4]:<12}| {columns[5]:<9}| {columns[6]}')
+    for row in data:
+        if row[5]:
+            print(f'{row[0]:<6}| {row[1]:<6}| {row[2]:<12}| {row[3]:<7}| {row[4]:<12}| {row[5]:<9}| {row[6]}')
+        else:
+            print(f'{row[0]:<6}| {row[1]:<6}| {row[2]:<12}| {row[3]:<7}| {row[4]:<12}|          | {row[6]}')
+    input('\nEnter to continue.\n')
 
 # ------
 ##
@@ -679,28 +825,192 @@ Please make a selection:
         if table_selection.isnumeric() and int(table_selection) in main_menu:
             table_selection = int(table_selection)
             if table_selection == 1:
-                input()
+                search_last()
 
             elif table_selection == 2:
-                input()
+                search_first()
 
             elif table_selection == 3:
-                input()
+                view_users()
 
             elif table_selection == 4:
-                input()
+                view_competencies()
 
             elif table_selection == 5:
-                input()
+                view_assessments()
 
             elif table_selection == 6:
-                input()
+                view_results()
 
         elif table_selection.isnumeric() and int(table_selection) == 7:
             break
 
         else:
             input('Invalid input. Enter to continue.\n')
+##
+# ------
+
+def add_user():
+    os.system('clear')
+
+    query = '''\
+INSERT INTO Users (last_name, first_name, phone, email, password, hire_date, date_entered)
+VALUES (?, ?, ?, ?, ?, ?, ?);\
+'''
+    create_info = []
+    columns = ['last_name', 'first_name', 'phone', 'email', 'password', 'hire_date', 'date_entered']
+    for index, column in enumerate(columns):
+        os.system('clear')
+        if index ==0:
+            create_input = input(f'{column}: ').title()
+            create_input = none_check(create_input).title()
+            create_info.append(create_input)
+
+        elif index ==1:
+            create_input = input(f'{column}: ').title()
+            create_input = none_check(create_input).title()
+            create_info.append(create_input)
+
+        elif index ==2:
+            create_input = input(f'{column}: ')
+            if create_input == '':
+                create_input = 'None'
+            create_info.append(create_input)
+
+        elif index ==3:
+            create_input = create_email()
+            create_info.append(create_input)
+
+        elif index ==4:
+            create_input = create_password()
+            create_info.append(create_input)
+
+        elif index ==5:
+            create_input = get_hire_date()
+            create_info.append(create_input)
+
+        elif index ==6:
+            create_input = get_today()
+            create_info.append(create_input)
+
+    os.system('clear')
+    cursor.execute(query, create_info)
+    connection.commit()
+    print(f'{create_info[1]} {create_info[0]} data successfully added.\n')
+    input('Enter to continue.\n')
+
+# ------
+
+def add_competency():
+    os.system('clear')
+
+    query = '''\
+INSERT INTO Competencies (name, date_entered)
+VALUES (?, ?);\
+'''
+    create_info = []
+    columns = ['name', 'date_entered']
+    for index, column in enumerate(columns):
+        os.system('clear')
+        if index ==0:
+            create_input = input(f'{column}: ').title()
+            create_input = none_check(create_input).title()
+            create_info.append(create_input)
+
+        elif index ==1:
+            create_input = get_today()
+            create_info.append(create_input)
+
+    os.system('clear')
+    cursor.execute(query, create_info)
+    connection.commit()
+    print(f'{create_info[0]} data successfully added.\n')
+    input('Enter to continue.\n')
+
+# ------
+
+def add_assessment():
+    os.system('clear')
+
+    query = '''\
+INSERT INTO Assessments (name, competency_id, date_entered)
+VALUES (?, ?, ?);\
+'''
+    create_info = []
+    columns = ['name', 'competency_id', 'date_entered']
+    for index, column in enumerate(columns):
+        os.system('clear')
+        if index ==0:
+            create_input = input(f'{column}: ').title()
+            create_input = none_check(create_input).title()
+            create_info.append(create_input)
+
+        elif index ==1:
+            create_input = int(input(f'{column}: '))
+            create_input = good_id_competencies(create_input)
+            create_info.append(create_input)
+
+        elif index ==2:
+            create_input = get_today()
+            create_info.append(create_input)
+
+    os.system('clear')
+    cursor.execute(query, create_info)
+    connection.commit()
+    print(f'{create_info[0]} data successfully added.\n')
+    input('Enter to continue.\n')
+
+# ------
+
+def add_result():
+    os.system('clear')
+
+    query = '''\
+INSERT INTO Assessment_Results (user_id, assessment_id, score, date_taken, manager_id, date_entered)
+VALUES (?, ?, ?, ?, ?, ?);\
+'''
+    create_info = []
+    columns = ['user_id', 'assessment_id', 'score', 'date_taken', 'manager_id', 'date_entered']
+    for index, column in enumerate(columns):
+        os.system('clear')
+        if index ==0:
+            create_input = int(input(f'{column}: '))
+            create_input = good_id_users(create_input)
+            create_info.append(create_input)
+
+        elif index ==1:
+            create_input = int(input(f'{column}: '))
+            create_input = good_id_assessments(create_input)
+            create_info.append(create_input)
+
+        elif index ==2:
+            while True:
+                os.system('clear')
+                create_input = int(input(f'{column}: '))
+                if create_input >= 0 and create_input <= 4:
+                    create_info.append(create_input)
+                    break
+                else:
+                    input('Invalid score. Enter to input a score within 0-4.\n')
+
+        elif index ==3:
+            create_input = get_assessment_date()
+            create_info.append(create_input)
+
+        elif index ==4:
+            create_input = int(input(f'{column}: '))
+            create_input = good_id_managers(create_input)
+            create_info.append(create_input)
+
+        elif index ==5:
+            create_input = get_today()
+            create_info.append(create_input)
+
+    os.system('clear')
+    cursor.execute(query, create_info)
+    connection.commit()
+    print('Result data successfully added.\n')
+    input('Enter to continue.\n')
 
 # ------
 ##
@@ -723,23 +1033,23 @@ Please make a selection:
         if table_selection.isnumeric() and int(table_selection) in main_menu:
             table_selection = int(table_selection)
             if table_selection == 1:
-                input()
+                add_user()
 
             elif table_selection == 2:
-                input()
+                add_competency()
 
             elif table_selection == 3:
-                input()
+                add_assessment()
 
             elif table_selection == 4:
-                input()
+                add_result()
 
         elif table_selection.isnumeric() and int(table_selection) == 5:
             break
 
         else:
             input('Invalid input. Enter to continue.\n')
-
+##
 # ------
 ##
 def manager_update_menu():
@@ -777,7 +1087,7 @@ Please make a selection:
 
         else:
             input('Invalid input. Enter to continue.\n')
-
+##
 # ------
 ##
 def manager_deactivate_menu():
@@ -815,7 +1125,7 @@ Please make a selection:
 
         else:
             input('Invalid input. Enter to continue.\n')
-
+##
 # ------
 ##
 def manager_export_menu():
@@ -853,7 +1163,7 @@ Please make a selection:
 
         else:
             input('Invalid input. Enter to continue.\n')
-
+##
 # ------
 ##
 def manager_menu(user1):
@@ -899,7 +1209,7 @@ Welcome, {user1.first}. Please make a selection:
 
         else:
             input('Invalid input. Enter to continue.\n')
-
+##
 # ------
 ##
 def manager_menu_selection(user1, user_data):
@@ -929,3 +1239,4 @@ Please make a selection:
 
         else:
             input('Invalid input. Enter to continue.\n')
+##
