@@ -852,7 +852,6 @@ Please make a selection:
 
 def add_user():
     os.system('clear')
-
     query = '''\
 INSERT INTO Users (last_name, first_name, phone, email, password, hire_date, date_entered)
 VALUES (?, ?, ?, ?, ?, ?, ?);\
@@ -903,7 +902,6 @@ VALUES (?, ?, ?, ?, ?, ?, ?);\
 
 def add_competency():
     os.system('clear')
-
     query = '''\
 INSERT INTO Competencies (name, date_entered)
 VALUES (?, ?);\
@@ -931,7 +929,6 @@ VALUES (?, ?);\
 
 def add_assessment():
     os.system('clear')
-
     query = '''\
 INSERT INTO Assessments (name, competency_id, date_entered)
 VALUES (?, ?, ?);\
@@ -964,7 +961,6 @@ VALUES (?, ?, ?);\
 
 def add_result():
     os.system('clear')
-
     query = '''\
 INSERT INTO Assessment_Results (user_id, assessment_id, score, date_taken, manager_id, date_entered)
 VALUES (?, ?, ?, ?, ?, ?);\
@@ -1089,8 +1085,81 @@ Please make a selection:
             input('Invalid input. Enter to continue.\n')
 ##
 # ------
+
+def deac_user(user1):
+    os.system('clear')
+    query = '''\
+UPDATE Users
+SET active = 0
+WHERE user_id = ?;\
+'''
+    while True:
+        deac_input = int(input('Input user ID to be deactivated: '))
+        if deac_input != user1.id:
+            deac_input = good_id_users(deac_input)
+            break
+        else:
+            input('Cannot input own ID. Enter to try again.\n')
+
+    cursor.execute(query, [deac_input])
+    connection.commit()
+    print(f'\nUser ID {deac_input} has been deactivated.')
+    input('Enter to continue.\n')
+
+# ------
+
+def deac_competency():
+    os.system('clear')
+    query = '''\
+UPDATE Competencies
+SET active = 0
+WHERE competency_id = ?;\
+'''
+    deac_input = int(input('Input competency ID to be deactivated: '))
+    deac_input = good_id_competencies(deac_input)
+
+    cursor.execute(query, [deac_input])
+    connection.commit()
+    print(f'\nCompetency ID {deac_input} has been deactivated.')
+    input('Enter to continue.\n')
+
+# ------
+
+def deac_assessment():
+    os.system('clear')
+    query = '''\
+UPDATE Assessments
+SET active = 0
+WHERE assessment_id = ?;\
+'''
+    deac_input = int(input('Input assessment ID to be deactivated: '))
+    deac_input = good_id_assessments(deac_input)
+
+    cursor.execute(query, [deac_input])
+    connection.commit()
+    print(f'\nAssessment ID {deac_input} has been deactivated.')
+    input('Enter to continue.\n')
+
+# ------
+
+def del_result():
+    os.system('clear')
+    query = '''\
+DELETE
+FROM Assessment_Results
+WHERE result_id = ?;\
+'''
+    del_input = int(input('Input result ID to be deleted: '))
+    del_input = good_id_results(del_input)
+
+    cursor.execute(query, [del_input])
+    connection.commit()
+    print(f'\nResult ID {del_input} has been deleted.')
+    input('Enter to continue.\n')
+
+# ------
 ##
-def manager_deactivate_menu():
+def manager_deactivate_menu(user1):
     main_menu = [1, 2, 3, 4]
     while True:
         os.system('clear')
@@ -1109,16 +1178,16 @@ Please make a selection:
         if table_selection.isnumeric() and int(table_selection) in main_menu:
             table_selection = int(table_selection)
             if table_selection == 1:
-                input()
+                deac_user(user1)
 
             elif table_selection == 2:
-                input()
+                deac_competency()
 
             elif table_selection == 3:
-                input()
+                deac_assessment()
 
             elif table_selection == 4:
-                input()
+                del_result()
 
         elif table_selection.isnumeric() and int(table_selection) == 5:
             break
@@ -1199,7 +1268,7 @@ Welcome, {user1.first}. Please make a selection:
                 manager_update_menu()
 
             elif table_selection == 5:
-                manager_deactivate_menu()
+                manager_deactivate_menu(user1)
 
             elif table_selection == 6:
                 manager_export_menu()
