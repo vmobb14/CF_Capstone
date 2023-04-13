@@ -29,7 +29,6 @@ def get_today():
 # ------
 
 def get_hire_date():
-    os.system('clear')
     current_date = []
     raw_date = str(get_today())
     raw_date = raw_date.split('-')
@@ -37,26 +36,19 @@ def get_hire_date():
         current_date.append(int(field))
 
     while True:
+        os.system('clear')
         day_input = int(input('Enter day employee was hired (DD): '))
         month_input = int(input('Enter month employee was hired (MM): '))
         year_input = int(input('Enter year employee was hired (YYYY): '))
 
-        if year_input > current_date[0] or year_input < 1972:
-            input('Invalid year input. Enter to re-input date.\n')
-        if year_input == current_date[0]:
-            if month_input <= current_date[1]:
-                if day_input > current_date[2]:
-                    input('Invalid day input. Enter to re-input date.\n')
-                    continue
-            else:
-                input('Invalid month input. Enter to re-input date.\n')
-                continue
-        return date(year_input, month_input, day_input)
+        if date(year_input, month_input, day_input) > get_today():
+            input('Invalid input. Enter to try again.')
+        else:
+            return date(year_input, month_input, day_input)
 
 # ------
 
 def get_assessment_date():
-    os.system('clear')
     current_date = []
     raw_date = str(get_today())
     raw_date = raw_date.split('-')
@@ -64,21 +56,15 @@ def get_assessment_date():
         current_date.append(int(field))
 
     while True:
+        os.system('clear')
         day_input = int(input('Enter day assessment was taken (DD): '))
         month_input = int(input('Enter month assessment was taken (MM): '))
         year_input = int(input('Enter year assessment was taken (YYYY): '))
 
-        if year_input > current_date[0] or year_input < 1972:
-            input('Invalid year input. Enter to re-input date.\n')
-        if year_input == current_date[0]:
-            if month_input <= current_date[1]:
-                if day_input > current_date[2]:
-                    input('Invalid day input. Enter to re-input date.\n')
-                    continue
-            else:
-                input('Invalid month input. Enter to re-input date.\n')
-                continue
-        return date(year_input, month_input, day_input)
+        if date(year_input, month_input, day_input) > get_today():
+            input('Invalid input. Enter to try again.')
+        else:
+            return date(year_input, month_input, day_input)
 
 # ------
 
@@ -103,12 +89,16 @@ FROM Users
 WHERE user_id = ? AND active = 1;\
 '''
     while True:
-        data = cursor.execute(check, [id_input]).fetchone()
-        if data == None:
-            os.system('clear')
-            id_input = int(input('Invalid ID input. Please try again: '))
+        if id_input.isnumeric():
+            data = cursor.execute(check, [int(id_input)]).fetchone()
+            if data == None:
+                os.system('clear')
+                id_input = input('Invalid ID input. Please try again: ')
+            else:
+                return int(id_input)
         else:
-            return id_input
+            os.system('clear')
+            id_input = input('Invalid ID input. Please try again: ')
 
 # ------
 
@@ -119,12 +109,16 @@ FROM Users
 WHERE user_id = ? AND active = 1 AND manager = 1;\
 '''
     while True:
-        data = cursor.execute(check, [id_input]).fetchone()
-        if data == None:
-            os.system('clear')
-            id_input = int(input('Invalid manager ID input. Please try again: '))
+        if id_input.isnumeric():
+            data = cursor.execute(check, [int(id_input)]).fetchone()
+            if data == None:
+                os.system('clear')
+                id_input = input('Invalid ID input. Please try again: ')
+            else:
+                return int(id_input)
         else:
-            return id_input
+            os.system('clear')
+            id_input = input('Invalid ID input. Please try again: ')
 
 # ------
 
@@ -135,12 +129,16 @@ FROM Competencies
 WHERE competency_id = ? AND active = 1;\
 '''
     while True:
-        data = cursor.execute(check, [id_input]).fetchone()
-        if data == None:
-            os.system('clear')
-            id_input = int(input('Invalid ID input. Please try again: '))
+        if id_input.isnumeric():
+            data = cursor.execute(check, [int(id_input)]).fetchone()
+            if data == None:
+                os.system('clear')
+                id_input = input('Invalid ID input. Please try again: ')
+            else:
+                return int(id_input)
         else:
-            return id_input
+            os.system('clear')
+            id_input = input('Invalid ID input. Please try again: ')
 
 # ------
 
@@ -151,12 +149,16 @@ FROM Assessments
 WHERE assessment_id = ? AND active = 1;\
 '''
     while True:
-        data = cursor.execute(check, [id_input]).fetchone()
-        if data == None:
-            os.system('clear')
-            id_input = int(input('Invalid ID input. Please try again: '))
+        if id_input.isnumeric():
+            data = cursor.execute(check, [int(id_input)]).fetchone()
+            if data == None:
+                os.system('clear')
+                id_input = input('Invalid ID input. Please try again: ')
+            else:
+                return int(id_input)
         else:
-            return id_input
+            os.system('clear')
+            id_input = input('Invalid ID input. Please try again: ')
 
 # ------
 
@@ -167,12 +169,16 @@ FROM Assessment_Results
 WHERE result_id = ? AND active = 1;\
 '''
     while True:
-        data = cursor.execute(check, [id_input]).fetchone()
-        if data == None:
-            os.system('clear')
-            id_input = int(input('Invalid ID input. Please try again: '))
+        if id_input.isnumeric():
+            data = cursor.execute(check, [int(id_input)]).fetchone()
+            if data == None:
+                os.system('clear')
+                id_input = input('Invalid ID input. Please try again: ')
+            else:
+                return int(id_input)
         else:
-            return id_input
+            os.system('clear')
+            id_input = input('Invalid ID input. Please try again: ')
 
 # ------
 
@@ -668,9 +674,58 @@ ORDER BY assessment_id ASC, result_id DESC;\
     input('\nEnter to continue.\n')
 
 # ------
+
+def results_summary():
+    users_query = '''\
+SELECT user_id, last_name, first_name
+FROM Users;\
+'''
+    scores_query = '''\
+SELECT r.user_id, r.score, a.name, r.date_taken, c.name
+FROM Assessment_Results r
+JOIN Users u
+ON r.user_id = u.user_id
+JOIN Assessments a
+ON r.assessment_id = a.assessment_id
+JOIN Competencies c
+ON a.competency_id = c.competency_id
+WHERE a.competency_id = ?
+GROUP BY r.user_id
+ORDER BY r.user_id, r.date_taken DESC;\
+'''
+    results_dict = {}
+    competency_avg = [0]
+    competency_name = ''
+    blank_space = 'N\\A'
+    id_input = input('Input competency ID to retrieve data: ')
+    id_input = good_id_competencies(id_input)
+    users_tuples = cursor.execute(users_query).fetchall()
+    scores_tuples = cursor.execute(scores_query, [id_input]).fetchall()
+
+    for user in users_tuples:
+        results_dict[user[0]] = [user[1], user[2]]
+
+    for score in scores_tuples:
+        competency_name = score[4]
+        competency_avg.append(score[1])
+        results_dict[score[0]].append(score[1])
+        results_dict[score[0]].append(score[2])
+        results_dict[score[0]].append(score[3])
+
+    os.system('clear')
+    for key in results_dict:
+        temp_list = results_dict[key]
+        if len(results_dict[key]) == 5:
+            print(f'ID: {key:<5}| Last: {temp_list[0]:<22}| First: {temp_list[1]:<22}| Score: {temp_list[2]:<5}| Name: {temp_list[3]:<32}| Date: {temp_list[4]}')
+        else:
+            print(f'ID: {key:<5}| Last: {temp_list[0]:<22}| First: {temp_list[1]:<22}| Score: {blank_space:<5}| Name: {blank_space:<32}| Date: {blank_space}')
+    print(f'\nCurrent company average for {competency_name} is {avg(competency_avg)}')
+    input('\nEnter to continue.\n')
+
+# ------
 ##
 def manager_reports_menu():
-    main_menu = [1, 2, 3]
+    main_menu = [1, 2, 3, 4]
     while True:
         os.system('clear')
         print(f'''\
@@ -680,7 +735,8 @@ Please make a selection:
 [1] Competency Levels Summary
 [2] User Competency Summary
 [3] User Assessment Summary
-[4] Return
+[4] Competency Results Summary
+[5] Return
 ''')
         table_selection = input('>>')
         os.system('clear')
@@ -695,7 +751,10 @@ Please make a selection:
             elif table_selection == 3:
                 assessment_summary()
 
-        elif table_selection.isnumeric() and int(table_selection) == 4:
+            elif table_selection == 4:
+                results_summary()
+
+        elif table_selection.isnumeric() and int(table_selection) == 5:
             break
 
         else:
@@ -982,10 +1041,13 @@ VALUES (?, ?, ?, ?, ?, ?);\
         elif index ==2:
             while True:
                 os.system('clear')
-                create_input = int(input(f'{column}: '))
-                if create_input >= 0 and create_input <= 4:
-                    create_info.append(create_input)
-                    break
+                create_input = input(f'{column} (0-4): ')
+                if create_input.isnumeric():
+                    if int(create_input) >= 0 and int(create_input) <= 4:
+                        create_info.append(int(create_input))
+                        break
+                    else:
+                        input('Invalid score. Enter to input a score within 0-4.\n')
                 else:
                     input('Invalid score. Enter to input a score within 0-4.\n')
 
@@ -1047,6 +1109,270 @@ Please make a selection:
             input('Invalid input. Enter to continue.\n')
 ##
 # ------
+
+def update_user():
+    pull_query = '''\
+SELECT last_name, first_name, manager, phone, email, hire_date
+FROM Users
+WHERE user_id = ?;\
+'''
+    push_query = '''\
+UPDATE Users
+SET last_name = ?, first_name = ?, manager = ?, phone = ?, email = ?, hire_date = ?
+WHERE user_id = ?;\
+'''
+    update_list = []
+    columns = ['last_name', 'first_name', 'manager', 'phone', 'email', 'hire_date']
+
+    id_input = input('Input user ID to update: ')
+    id_input = good_id_users(id_input)
+    pull_data = cursor.execute(pull_query, [id_input]).fetchone()
+    for field in pull_data:
+        update_list.append(field)
+
+    update_menu = [1, 2, 3, 4, 5, 6, 7]
+    while True:
+        os.system('clear')
+        print(f'''\
+Select field to update:
+[1] {columns[0]}: {update_list[0]}
+[2] {columns[1]}: {update_list[1]}
+[3] {columns[2]}: {update_list[2]}
+[4] {columns[3]}: {update_list[3]}
+[5] {columns[4]}: {update_list[4]}
+[6] {columns[5]}: {update_list[5]}
+[7] Commit changes
+''')
+        field_selection = input('>>')
+
+        if field_selection.isnumeric() and int(field_selection) in update_menu:
+            field_selection = int(field_selection)
+            if field_selection == 1:
+                os.system('clear')
+                update_input = input(f'{columns[0]}: ')
+                update_input = none_check(update_input)
+                update_list.pop(0)
+                update_list.insert(0, update_input.title())
+
+            elif field_selection == 2:
+                os.system('clear')
+                update_input = input(f'{columns[1]}: ')
+                update_input = none_check(update_input)
+                update_list.pop(1)
+                update_list.insert(1, update_input.title())
+
+            elif field_selection == 3:
+                os.system('clear')
+                manager_values = [0, 1]
+                update_input = input(f'{columns[2]} (1 or 0): ')
+                if update_input.isnumeric() and int(update_input) in manager_values:
+                    update_input = int(update_input)
+                    update_list.pop(2)
+                    update_list.insert(2, update_input)
+                else:
+                    input('Invalid input. Enter to return.')
+
+            elif field_selection == 4:
+                os.system('clear')
+                update_input = input(f'{columns[3]}: ')
+                if update_input == '':
+                    update_input = 'None'
+                update_list.pop(3)
+                update_list.insert(3, update_input)
+
+            elif field_selection == 5:
+                os.system('clear')
+                update_input = create_email()
+                update_list.pop(4)
+                update_list.insert(4, update_input)
+
+            elif field_selection == 6:
+                os.system('clear')
+                update_input = get_hire_date()
+                update_list.pop(5)
+                update_list.append(update_input)
+
+            elif field_selection == 7:
+                update_list.append(id_input)
+                cursor.execute(push_query, update_list)
+                connection.commit()
+                break
+        else:
+            input('Invalid input. Enter to try again.')
+
+# ------
+
+def update_competency():
+    pull_query = '''\
+SELECT name
+FROM Competencies
+WHERE competency_id = ?;\
+'''
+    push_query = '''\
+UPDATE Competencies
+SET name = ?
+WHERE competency_id = ?;\
+'''
+    update_list = []
+    id_input = input('Input competency ID to update: ')
+    id_input = good_id_competencies(id_input)
+    pull_data = cursor.execute(pull_query, [id_input]).fetchone()
+    for field in pull_data:
+        update_list.append(field)
+
+    update_input = input(f'{update_list[0]}: ')
+    update_input = none_check(update_input)
+    update_list.append(update_input.title())
+    update_list.pop(0)
+
+    update_list.append(id_input)
+    cursor.execute(push_query, update_list)
+    connection.commit()
+
+# ------
+
+def update_assessment():
+    pull_query = '''\
+SELECT name, competency_id
+FROM Assessments
+WHERE assessment_id = ?;\
+'''
+    push_query = '''\
+UPDATE Assessments
+SET name = ?, competency_id = ?
+WHERE assessment_id = ?;\
+'''
+    update_list = []
+    columns = ['name', 'competency_id']
+
+    id_input = input('Input assessment ID to update: ')
+    id_input = good_id_assessments(id_input)
+    pull_data = cursor.execute(pull_query, [id_input]).fetchone()
+    for field in pull_data:
+        update_list.append(field)
+
+    update_menu = [1, 2, 3]
+    while True:
+        os.system('clear')
+        print(f'''\
+Select field to update:
+[1] {columns[0]}: {update_list[0]}
+[2] {columns[1]}: {update_list[1]}
+[3] Commit changes
+''')
+        field_selection = input('>>')
+
+        if field_selection.isnumeric() and int(field_selection) in update_menu:
+            field_selection = int(field_selection)
+            if field_selection == 1:
+                os.system('clear')
+                update_input = input(f'{columns[0]}: ')
+                update_input = none_check(update_input)
+                update_list.pop(0)
+                update_list.insert(0, update_input.title())
+
+            elif field_selection == 2:
+                os.system('clear')
+                update_input = input(f'{columns[1]}: ')
+                update_input = good_id_competencies(update_input)
+                update_list.pop(1)
+                update_list.append(update_input.title())
+
+            elif field_selection == 3:
+                update_list.append(id_input)
+                cursor.execute(push_query, update_list)
+                connection.commit()
+                break
+        else:
+            input('Invalid input. Enter to try again.')
+
+# ------
+
+def update_result():
+    pull_query = '''\
+SELECT user_id, assessment_id, score, date_taken, manager_id
+FROM Assessment_Results
+WHERE result_id = ?;\
+'''
+    push_query = '''\
+UPDATE Assessment_Results
+SET user_id = ?, assessment_id = ?, score = ?, date_taken = ?, manager_id = ?
+WHERE result_id = ?;\
+'''
+    update_list = []
+    columns = ['user_id', 'assessment_id', 'score', 'date_taken', 'manager_id']
+
+    id_input = input('Input result ID to update: ')
+    id_input = good_id_results(id_input)
+    pull_data = cursor.execute(pull_query, [id_input]).fetchone()
+    for field in pull_data:
+        update_list.append(field)
+
+    update_menu = [1, 2, 3, 4, 5, 6]
+    while True:
+        os.system('clear')
+        print(f'''\
+Select field to update:
+[1] {columns[0]}: {update_list[0]}
+[2] {columns[1]}: {update_list[1]}
+[3] {columns[2]}: {update_list[2]}
+[4] {columns[3]}: {update_list[3]}
+[5] {columns[4]}: {update_list[4]}
+[6] Commit changes
+''')
+        field_selection = input('>>')
+
+        if field_selection.isnumeric() and int(field_selection) in update_menu:
+            field_selection = int(field_selection)
+            if field_selection == 1:
+                os.system('clear')
+                update_input = input(f'{columns[0]}: ')
+                update_input = good_id_users(update_input)
+                update_list.pop(0)
+                update_list.insert(0, update_input)
+
+            elif field_selection == 2:
+                os.system('clear')
+                update_input = input(f'{columns[1]}: ')
+                update_input = good_id_assessments(update_input)
+                update_list.pop(1)
+                update_list.insert(1, update_input)
+
+            elif field_selection == 3:
+                os.system('clear')
+                update_input = input(f'{columns[2]}: ')
+                if update_input.isnumeric():
+                    if int(update_input) >= 0 and int(update_input) <= 4:
+                        update_list.pop(2)
+                        update_list.insert(2, int(update_input))
+                        break
+                    else:
+                        input('Invalid score. Enter to input a score within 0-4.\n')
+                else:
+                    input('Invalid score. Enter to input a score within 0-4.\n')
+
+            elif field_selection == 4:
+                os.system('clear')
+                update_input = get_assessment_date()
+                update_list.pop(3)
+                update_list.insert(3, update_input)
+
+            elif field_selection == 5:
+                os.system('clear')
+                update_input = input(f'{columns[4]}: ')
+                update_input = good_id_managers(update_input)
+                update_list.pop(4)
+                update_list.insert(4, update_input)
+
+            elif field_selection == 6:
+                update_list.append(id_input)
+                cursor.execute(push_query, update_list)
+                connection.commit()
+                break
+        else:
+            input('Invalid input. Enter to try again.')
+
+# ------
 ##
 def manager_update_menu():
     main_menu = [1, 2, 3, 4]
@@ -1059,7 +1385,7 @@ Please make a selection:
 [1] Update user
 [2] Update competency
 [3] Update assessment
-[4] Update assessment result
+[4] Update assessment
 [5] Return
 ''')
         table_selection = input('>>')
@@ -1067,16 +1393,16 @@ Please make a selection:
         if table_selection.isnumeric() and int(table_selection) in main_menu:
             table_selection = int(table_selection)
             if table_selection == 1:
-                input()
+                update_user()
 
             elif table_selection == 2:
-                input()
+                update_competency()
 
             elif table_selection == 3:
-                input()
+                update_assessment()
 
             elif table_selection == 4:
-                input()
+                update_result()
 
         elif table_selection.isnumeric() and int(table_selection) == 5:
             break
