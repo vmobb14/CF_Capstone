@@ -98,6 +98,7 @@ def none_check(update_input):
             if corrective_input == '':
                 continue
             else:
+                os.system('clear')
                 return update_input
     else:
         return update_input
@@ -117,6 +118,7 @@ WHERE user_id = ? AND active = 1;\
                 os.system('clear')
                 id_input = input('Invalid ID input. Please try again: ')
             else:
+                os.system('clear')
                 return int(id_input)
         else:
             os.system('clear')
@@ -154,6 +156,7 @@ WHERE user_id = ? AND active = 1 AND manager = 1;\
                 os.system('clear')
                 id_input = input('Invalid ID input. Please try again: ')
             else:
+                os.system('clear')
                 return int(id_input)
         else:
             os.system('clear')
@@ -174,6 +177,7 @@ WHERE competency_id = ? AND active = 1;\
                 os.system('clear')
                 id_input = input('Invalid ID input. Please try again: ')
             else:
+                os.system('clear')
                 return int(id_input)
         else:
             os.system('clear')
@@ -194,6 +198,7 @@ WHERE assessment_id = ? AND active = 1;\
                 os.system('clear')
                 id_input = input('Invalid ID input. Please try again: ')
             else:
+                os.system('clear')
                 return int(id_input)
         else:
             os.system('clear')
@@ -231,6 +236,7 @@ WHERE result_id = ? AND active = 1;\
                 os.system('clear')
                 id_input = input('Invalid ID input. Please try again: ')
             else:
+                os.system('clear')
                 return int(id_input)
         else:
             os.system('clear')
@@ -1287,7 +1293,7 @@ WHERE competency_id = ?;\
     for field in pull_data:
         update_list.append(field)
 
-    update_input = input(f'{update_list[0]}: ')
+    update_input = input(f'{update_list[0]}\nname: ')
     update_input = none_check(update_input)
     update_list.append(update_input.title())
     update_list.pop(0)
