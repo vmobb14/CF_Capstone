@@ -1,4 +1,5 @@
 import os
+import csv
 import copy
 import bcrypt
 from datetime import date
@@ -68,6 +69,27 @@ def get_assessment_date():
 
 # ------
 
+def import_date_taken(date_input):
+    date_input = date_input.split('-')
+    if len(date_input) == 3:
+        if len(date_input[0]) == 4:
+            if len(date_input[1]) == 2:
+                if len(date_input[2]) == 2:
+                    if date(int(date_input[0]), int(date_input[1]), int(date_input[2])) <= get_today():
+                        return True
+                    else:
+                        return False
+                else:
+                    return False
+            else:
+                return False
+        else:
+            return False
+    else:
+        return False
+
+# ------
+
 def none_check(update_input):
     if update_input == None or update_input == '':
         while True:
@@ -99,6 +121,23 @@ WHERE user_id = ? AND active = 1;\
         else:
             os.system('clear')
             id_input = input('Invalid ID input. Please try again: ')
+
+# ------
+
+def import_id_users(id_input):
+    check = '''\
+SELECT *
+FROM Users
+WHERE user_id = ? AND active = 1;\
+'''
+    if id_input.isnumeric():
+        data = cursor.execute(check, [int(id_input)]).fetchone()
+        if data == None:
+            return False
+        else:
+            return True
+    else:
+        return False
 
 # ------
 
@@ -162,6 +201,23 @@ WHERE assessment_id = ? AND active = 1;\
 
 # ------
 
+def import_id_assessments(id_input):
+    check = '''\
+SELECT *
+FROM Assessments
+WHERE assessment_id = ? AND active = 1;\
+'''
+    if id_input.isnumeric():
+        data = cursor.execute(check, [int(id_input)]).fetchone()
+        if data == None:
+            return False
+        else:
+            return True
+    else:
+        return False
+
+# ------
+
 def good_id_results(id_input):
     check = '''\
 SELECT *
@@ -179,6 +235,17 @@ WHERE result_id = ? AND active = 1;\
         else:
             os.system('clear')
             id_input = input('Invalid ID input. Please try again: ')
+
+# ------
+
+def import_score(score_input):
+    if score_input.isnumeric():
+        if int(score_input) >= 0 and int(score_input) <= 4:
+            return True
+        else:
+            return False
+    else:
+        return False
 
 # ------
 
@@ -462,7 +529,7 @@ ORDER BY a.competency_id ASC, r.assessment_id ASC, r.date_taken DESC;\
     for key in result_dict:
         print(f'{key[0]}, {key[1]}: {result_dict[key]}')
     input('\nEnter to continue.\n')
-
+##
 # ------
 ##
 def user_menu(user1, user_data):
@@ -531,7 +598,7 @@ Welcome, {user1.first}. Please make a selection:
 
         else:
             input('Invalid input. Enter to continue.\n')
-##
+
 # ------
 
 def competency_levels():
@@ -721,7 +788,7 @@ ORDER BY r.user_id, r.date_taken DESC;\
             print(f'ID: {key:<5}| Last: {temp_list[0]:<22}| First: {temp_list[1]:<22}| Score: {blank_space:<5}| Name: {blank_space:<32}| Date: {blank_space}')
     print(f'\nCurrent company average for {competency_name} is {avg(competency_avg)}')
     input('\nEnter to continue.\n')
-
+##
 # ------
 ##
 def manager_reports_menu():
@@ -759,7 +826,7 @@ Please make a selection:
 
         else:
             input('Invalid input. Enter to continue.\n')
-##
+
 # ------
 
 def search_last():
@@ -860,7 +927,7 @@ ORDER BY result_id ASC;\
         else:
             print(f'{row[0]:<6}| {row[1]:<6}| {row[2]:<12}| {row[3]:<7}| {row[4]:<12}|          | {row[6]}')
     input('\nEnter to continue.\n')
-
+##
 # ------
 ##
 def manager_viewing_menu():
@@ -906,7 +973,7 @@ Please make a selection:
 
         else:
             input('Invalid input. Enter to continue.\n')
-##
+
 # ------
 
 def add_user():
@@ -1069,7 +1136,7 @@ VALUES (?, ?, ?, ?, ?, ?);\
     connection.commit()
     print('Result data successfully added.\n')
     input('Enter to continue.\n')
-
+##
 # ------
 ##
 def manager_creation_menu():
@@ -1107,7 +1174,7 @@ Please make a selection:
 
         else:
             input('Invalid input. Enter to continue.\n')
-##
+
 # ------
 
 def update_user():
@@ -1371,7 +1438,7 @@ Select field to update:
                 break
         else:
             input('Invalid input. Enter to try again.')
-
+##
 # ------
 ##
 def manager_update_menu():
@@ -1409,7 +1476,7 @@ Please make a selection:
 
         else:
             input('Invalid input. Enter to continue.\n')
-##
+
 # ------
 
 def deac_user(user1):
@@ -1482,7 +1549,7 @@ WHERE result_id = ?;\
     connection.commit()
     print(f'\nResult ID {del_input} has been deleted.')
     input('Enter to continue.\n')
-
+##
 # ------
 ##
 def manager_deactivate_menu(user1):
@@ -1520,40 +1587,162 @@ Please make a selection:
 
         else:
             input('Invalid input. Enter to continue.\n')
+
+# ------
+
+def export_users():
+    columns_query = '''\
+PRAGMA table_info(Users);\
+'''
+    data_query = '''\
+SELECT user_id, last_name, first_name, manager, phone, email, hire_date, date_entered, active
+FROM USERS
+ORDER BY active DESC, manager DESC, user_id ASC;\
+'''
+    clean_columns = []
+    raw_columns = cursor.execute(columns_query).fetchall()
+    for row in raw_columns:
+        clean_columns.append(row[1])
+    clean_columns.pop(6)
+
+    data = cursor.execute(data_query).fetchall()
+
+    with open('outfile.csv', 'wt') as outfile:
+        wrtr = csv.writer(outfile)
+        wrtr.writerow(clean_columns)
+        wrtr.writerows(data)
+
+# ------
+
+def export_competencies():
+    columns_query = '''\
+PRAGMA table_info(Competencies);\
+'''
+    data_query = '''\
+SELECT *
+FROM Competencies
+ORDER BY active DESC, competency_id ASC;\
+'''
+    clean_columns = []
+    raw_columns = cursor.execute(columns_query).fetchall()
+    for row in raw_columns:
+        clean_columns.append(row[1])
+
+    data = cursor.execute(data_query).fetchall()
+
+    with open('outfile.csv', 'wt') as outfile:
+        wrtr = csv.writer(outfile)
+        wrtr.writerow(clean_columns)
+        wrtr.writerows(data)
+
+# ------
+
+def export_assessments():
+    columns_query = '''\
+PRAGMA table_info(Assessments);\
+'''
+    data_query = '''\
+SELECT *
+FROM Assessments
+ORDER BY active DESC, assessment_id ASC;\
+'''
+    clean_columns = []
+    raw_columns = cursor.execute(columns_query).fetchall()
+    for row in raw_columns:
+        clean_columns.append(row[1])
+
+    data = cursor.execute(data_query).fetchall()
+
+    with open('outfile.csv', 'wt') as outfile:
+        wrtr = csv.writer(outfile)
+        wrtr.writerow(clean_columns)
+        wrtr.writerows(data)
+
+# ------
+
+def export_results():
+    columns_query = '''\
+PRAGMA table_info(Assessment_Results);\
+'''
+    data_query = '''\
+SELECT *
+FROM Assessment_Results
+ORDER BY result_id ASC;\
+'''
+    clean_columns = []
+    raw_columns = cursor.execute(columns_query).fetchall()
+    for row in raw_columns:
+        clean_columns.append(row[1])
+
+    data = cursor.execute(data_query).fetchall()
+
+    with open('outfile.csv', 'wt') as outfile:
+        wrtr = csv.writer(outfile)
+        wrtr.writerow(clean_columns)
+        wrtr.writerows(data)
+
+# ------
+
+def import_results():
+    query = '''\
+INSERT INTO Assessment_Results (user_id, assessment_id, score, date_taken, date_entered)
+VALUES (?, ?, ?, ?, ?);\
+'''
+    with open('infile.csv', 'rt') as infile:
+        rdr = csv.reader(infile)
+        next(rdr)
+        counter = 1
+        for row in rdr:
+            good_import = False
+            good_import = import_id_users(row[0])
+            good_import = import_id_assessments(row[1])
+            good_import = import_score(row[2])
+            good_import = import_date_taken(row[3])
+            if good_import:
+                row.append(get_today())
+                cursor.execute(query, row)
+                counter += 1
+            else:
+                input(f'Bad input, failure on line {counter}')
+                return
 ##
 # ------
 ##
 def manager_export_menu():
-    main_menu = [1, 2, 3, 4]
+    main_menu = [1, 2, 3, 4, 5]
     while True:
         os.system('clear')
         print(f'''\
     **** Import/Export System ****  M
 
 Please make a selection:
-[1] Import assessment results
-[2] Export users
-[3] Export competencies
-[4] Export assessments
-[5] Return
+[1] Export users
+[2] Export competencies
+[3] Export assessments
+[4] Export assessment results
+[5] Import assessment results
+[6] Return
 ''')
         table_selection = input('>>')
         os.system('clear')
         if table_selection.isnumeric() and int(table_selection) in main_menu:
             table_selection = int(table_selection)
             if table_selection == 1:
-                input()
+                export_users()
 
             elif table_selection == 2:
-                input()
+                export_competencies()
 
             elif table_selection == 3:
-                input()
+                export_assessments()
 
             elif table_selection == 4:
-                input()
+                export_results()
 
-        elif table_selection.isnumeric() and int(table_selection) == 5:
+            elif table_selection == 5:
+                import_results()
+
+        elif table_selection.isnumeric() and int(table_selection) == 6:
             break
 
         else:
@@ -1634,4 +1823,4 @@ Please make a selection:
 
         else:
             input('Invalid input. Enter to continue.\n')
-##
+######
