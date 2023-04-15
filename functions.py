@@ -388,6 +388,25 @@ def create_password():
 
 # ------
 
+def phone_check(phone_input):
+    while True:
+        phone_input = phone_input.split('-')
+        if len(phone_input) == 3:
+            if len(phone_input[0]) == 3:
+                if len(phone_input[1]) == 3:
+                    if len(phone_input[2]) == 4:
+                        return '-'.join(phone_input)
+                    else:
+                        phone_input = input('Invalid input, please re-enter using XXX-XXX-XXXX formatting: ')
+                else:
+                    phone_input = input('Invalid input, please re-enter using XXX-XXX-XXXX formatting: ')
+            else:
+                phone_input = input('Invalid input, please re-enter using XXX-XXX-XXXX formatting: ')
+        else:
+            phone_input = input('Invalid input, please re-enter using XXX-XXX-XXXX formatting: ')
+
+# ------
+
 def update_user_db(user_data, update_input, update_index):
     query = '''\
 UPDATE Users
@@ -454,14 +473,14 @@ Input item to update:
 [3] phone: {user1.phone}
 [4] email: {user1.email}
 [5] password
-[6] Return (Updates profile)
+[6] Return
     ''')
         menu_input = input('>>')
         if menu_input.isnumeric():
             menu_input = int(menu_input)
             if menu_input in menu_options:
                 if menu_input == 1:
-                    update_input = input('Input legal surname name: ')
+                    update_input = input('Input legal surname: ')
                     update_input = none_check(update_input)
                     user_data = update_user_db(user_data, update_input, menu_input)
                     user1 = create_user_instance(user1.manager, user_data)
@@ -475,7 +494,11 @@ Input item to update:
                     input('Field has been updated. Enter to continue.\n')
 
                 elif menu_input == 3:
-                    update_input = input('Input desired ten digit phone number: ')
+                    update_input = input('Input desired ten digit phone number using XXX-XXX-XXXX formatting: ')
+                    if update_input == '':
+                        update_input = 'None'
+                    else:
+                        update_input = phone_check(update_input)
                     user_data = update_user_db(user_data, update_input, menu_input)
                     user1 = create_user_instance(user1.manager, user_data)
                     input('Field has been updated. Enter to continue.\n')
@@ -993,19 +1016,21 @@ VALUES (?, ?, ?, ?, ?, ?, ?);\
     for index, column in enumerate(columns):
         os.system('clear')
         if index ==0:
-            create_input = input(f'{column}: ').title()
-            create_input = none_check(create_input).title()
-            create_info.append(create_input)
+            create_input = input(f'{column}: ')
+            create_input = none_check(create_input)
+            create_info.append(create_input.title())
 
         elif index ==1:
-            create_input = input(f'{column}: ').title()
-            create_input = none_check(create_input).title()
-            create_info.append(create_input)
+            create_input = input(f'{column}: ')
+            create_input = none_check(create_input)
+            create_info.append(create_input.title())
 
         elif index ==2:
             create_input = input(f'{column}: ')
             if create_input == '':
                 create_input = 'None'
+            else:
+                create_input = phone_check(create_input)
             create_info.append(create_input)
 
         elif index ==3:
@@ -1043,9 +1068,9 @@ VALUES (?, ?);\
     for index, column in enumerate(columns):
         os.system('clear')
         if index ==0:
-            create_input = input(f'{column}: ').title()
-            create_input = none_check(create_input).title()
-            create_info.append(create_input)
+            create_input = input(f'{column}: ')
+            create_input = none_check(create_input)
+            create_info.append(create_input.title())
 
         elif index ==1:
             create_input = get_today()
@@ -1070,9 +1095,9 @@ VALUES (?, ?, ?);\
     for index, column in enumerate(columns):
         os.system('clear')
         if index ==0:
-            create_input = input(f'{column}: ').title()
-            create_input = none_check(create_input).title()
-            create_info.append(create_input)
+            create_input = input(f'{column}: ')
+            create_input = none_check(create_input)
+            create_info.append(create_input.title())
 
         elif index ==1:
             create_input = int(input(f'{column}: '))
@@ -1250,6 +1275,8 @@ Select field to update:
                 update_input = input(f'{columns[3]}: ')
                 if update_input == '':
                     update_input = 'None'
+                else:
+                    update_input = phone_check(update_input)
                 update_list.pop(3)
                 update_list.insert(3, update_input)
 
@@ -1349,7 +1376,7 @@ Select field to update:
                 update_input = input(f'{columns[1]}: ')
                 update_input = good_id_competencies(update_input)
                 update_list.pop(1)
-                update_list.append(update_input.title())
+                update_list.append(update_input)
 
             elif field_selection == 3:
                 update_list.append(id_input)
