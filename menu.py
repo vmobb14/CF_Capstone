@@ -1,14 +1,5 @@
 from functions import *
 
-# '$2b$12$5AY3Un1tAdlbax8SkkKOGeaBG/38apqs2A5xYqfN75zD08ABJs/AS'
-# query = '''\
-# UPDATE Users
-# SET password = '$2b$12$5AY3Un1tAdlbax8SkkKOGeaBG/38apqs2A5xYqfN75zD08ABJs/AS'
-# WHERE user_id = 2;\
-# '''
-# cursor.execute(query)
-# connection.commit()
-
 def app_exe():
     while True:
         login_tuple = login()

@@ -11,21 +11,37 @@ cursor = connection.cursor()
 
 # ------
 
-# with open('Assessment_Results.sql') as outfile:
-#     queries = outfile.read()
-# cursor.executescript(queries)
-
-# query = '''\
-# DELETE FROM Users
-# WHERE first_name = 'Charlee';\
-# '''
-# cursor.execute(query)
-# connection.commit()
+def get_today():
+    return date.today()
 
 # ------
 
-def get_today():
-    return date.today()
+def leap(year):
+    if year % 4 == 0:
+        if year % 100 == 0:
+            if year % 400 == 0:
+                return True
+            else:
+                return False
+        else:
+            return True
+    else:
+        return False
+
+# ------
+
+def num_days_in_month(month, year):
+    months_31 = [1, 3, 5, 7, 8, 10, 12]
+    months_30 = [4, 6, 9, 11]
+    if month in months_31:
+      return 31
+    elif month in months_30:
+      return 30
+    else:
+      if leap(year):
+        return 29
+      else:
+        return 28
 
 # ------
 
@@ -38,12 +54,29 @@ def get_hire_date():
 
     while True:
         os.system('clear')
-        day_input = int(input('Enter day employee was hired (DD): '))
-        month_input = int(input('Enter month employee was hired (MM): '))
-        year_input = int(input('Enter year employee was hired (YYYY): '))
+        year_input = input('Enter year employee was hired (YYYY): ')
+        if year_input.isnumeric() and len(year_input) == 4 and int(year_input) >= 1972:
+            year_input = int(year_input)
+        else:
+            input('Invalid year input. Enter to try again.')
+            continue
+
+        month_input = input('Enter month employee was hired (MM): ')
+        if month_input.isnumeric() and (len(month_input) == 1 or len(month_input) == 2) and (int(month_input) > 0 and int(month_input) < 13):
+            month_input = int(month_input)
+        else:
+            input('Invalid month input. Enter to try again.')
+            continue
+
+        day_input = input('Enter day employee was hired (DD): ')
+        if day_input.isnumeric() and (len(day_input) == 1 or len(day_input) == 2) and (int(day_input) > 0 and int(day_input) <= num_days_in_month(month_input, year_input)):
+            day_input = int(day_input)
+        else:
+            input('Invalid day input. Enter to try again.')
+            continue
 
         if date(year_input, month_input, day_input) > get_today():
-            input('Invalid input. Enter to try again.')
+            input('Invalid date input. Enter to try again.')
         else:
             return date(year_input, month_input, day_input)
 
@@ -58,12 +91,29 @@ def get_assessment_date():
 
     while True:
         os.system('clear')
-        day_input = int(input('Enter day assessment was taken (DD): '))
-        month_input = int(input('Enter month assessment was taken (MM): '))
-        year_input = int(input('Enter year assessment was taken (YYYY): '))
+        year_input = input('Enter year assessment was taken (YYYY): ')
+        if year_input.isnumeric() and len(year_input) == 4 and int(year_input) >= 1972:
+            year_input = int(year_input)
+        else:
+            input('Invalid year input. Enter to try again.')
+            continue
+
+        month_input = input('Enter month assessment was taken (MM): ')
+        if month_input.isnumeric() and (len(month_input) == 1 or len(month_input) == 2) and (int(month_input) > 0 and int(month_input) < 13):
+            month_input = int(month_input)
+        else:
+            input('Invalid month input. Enter to try again.')
+            continue
+
+        day_input = input('Enter day assessment was taken (DD): ')
+        if day_input.isnumeric() and (len(day_input) == 1 or len(day_input) == 2) and (int(day_input) > 0 and int(day_input) <= num_days_in_month(month_input, year_input)):
+            day_input = int(day_input)
+        else:
+            input('Invalid day input. Enter to try again.')
+            continue
 
         if date(year_input, month_input, day_input) > get_today():
-            input('Invalid input. Enter to try again.')
+            input('Invalid date input. Enter to try again.')
         else:
             return date(year_input, month_input, day_input)
 
@@ -646,7 +696,17 @@ ON r.assessment_id = a.assessment_id
 WHERE a.competency_id = ? AND u.active = 1
 ORDER BY u.last_name ASC;\
 '''
-    id_search = input('Input competency ID to retrieve assessments for: ')
+    another_query = '''\
+SELECT competency_id, name
+FROM Competencies
+ORDER BY competency_id ASC;\
+'''
+    columns = ['id', 'name']
+    data = cursor.execute(another_query).fetchall()
+    print(f'{columns[0]:<5}| {columns[1]}')
+    for row in data:
+        print(f'{row[0]:<5}| {row[1]}')
+    id_search = input('\nInput competency ID to retrieve assessments for: ')
     good_id_competencies(id_search)
 
     data_tuple = cursor.execute(data_query, [id_search]).fetchall()
@@ -697,7 +757,17 @@ WHERE r.user_id = ?
 GROUP BY r.assessment_id
 ORDER BY a.competency_id ASC, r.assessment_id ASC, r.date_taken DESC;\
 '''
-    id_search = input('Input user ID to retrieve scores for: ')
+    another_query = '''\
+SELECT user_id, last_name, first_name
+FROM Users
+ORDER BY user_id ASC;\
+'''
+    columns = ['id', 'last_name', 'first_name']
+    data = cursor.execute(another_query).fetchall()
+    print(f'{columns[0]:<5}| {columns[1]:<22}| {columns[2]}')
+    for row in data:
+        print(f'{row[0]:<5}| {row[1]:<22}| {row[2]}')
+    id_search = input('\nInput user ID to retrieve scores for: ')
     good_id_users(id_search)
 
     competencies_tuple = cursor.execute(competencies_query).fetchall()
@@ -741,7 +811,17 @@ FROM Assessment_Results
 WHERE user_id = ? AND active = 1
 ORDER BY assessment_id ASC, result_id DESC;\
 '''
-    id_search = input('Input user ID to retrieve assessments for: ')
+    another_query = '''\
+SELECT user_id, last_name, first_name
+FROM Users
+ORDER BY user_id ASC;\
+'''
+    columns = ['id', 'last_name', 'first_name']
+    data = cursor.execute(another_query).fetchall()
+    print(f'{columns[0]:<5}| {columns[1]:<22}| {columns[2]}')
+    for row in data:
+        print(f'{row[0]:<5}| {row[1]:<22}| {row[2]}')
+    id_search = input('\nInput user ID to retrieve assessments for: ')
     good_id_users(id_search)
 
     assessments_tuple = cursor.execute(assessments_query).fetchall()
@@ -789,15 +869,25 @@ WHERE a.competency_id = ?
 GROUP BY r.user_id
 ORDER BY r.user_id, r.date_taken DESC;\
 '''
+    another_query = '''\
+SELECT competency_id, name
+FROM Competencies
+ORDER BY competency_id ASC;\
+'''
+    columns = ['id', 'name']
+    data = cursor.execute(another_query).fetchall()
+    print(f'{columns[0]:<5}| {columns[1]}')
+    for row in data:
+        print(f'{row[0]:<5}| {row[1]}')
+    id_input = input('\nInput competency ID to retrieve scores for: ')
+    id_input = good_id_competencies(id_input)
+
+    users_tuples = cursor.execute(users_query).fetchall()
+    scores_tuples = cursor.execute(scores_query, [id_input]).fetchall()
     results_dict = {}
     competency_avg = [0]
     competency_name = ''
     blank_space = 'N\\A'
-    id_input = input('Input competency ID to retrieve data: ')
-    id_input = good_id_competencies(id_input)
-    users_tuples = cursor.execute(users_query).fetchall()
-    scores_tuples = cursor.execute(scores_query, [id_input]).fetchall()
-
     for user in users_tuples:
         results_dict[user[0]] = [user[1], user[2]]
 
